@@ -9,5 +9,5 @@ terraform {
 
 provider "aws" {
   version = "~>6.0"
-  region  = "us-west-1"
+  region  = "ap-south-1"
 }

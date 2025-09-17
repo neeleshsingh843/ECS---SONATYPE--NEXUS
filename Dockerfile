@@ -49,7 +49,7 @@ VOLUME ${NEXUS_DATA}
 EXPOSE 8081
 USER nexus
 
-ENV INSTALL4J_ADD_VM_PARAMS="-Xms256m -Xmx256m -XX:MaxDirectMemorySize=256m -Djava.util.prefs.userRoot=${NEXUS_DATA}/javaprefs"
+ENV INSTALL4J_ADD_VM_PARAMS="-Xms1256m -Xmx1256m -XX:MaxDirectMemorySize=1256m -Djava.util.prefs.userRoot=${NEXUS_DATA}/javaprefs"
 
 CMD ["/opt/sonatype/nexus/bin/nexus", "run"]
 

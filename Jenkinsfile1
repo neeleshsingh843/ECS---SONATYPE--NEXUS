@@ -1,0 +1,55 @@
+#JENKINS PIPELINE TO TAKE DOCKERFILE FROM GITHUB REPO 
+#AND THEN BUILD IMAGE THEN PUSH IMAGE TO ECR.
+
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION     = "us-east-1"            // change as per your region
+        AWS_ACCOUNT_ID = "123456789012"         // your AWS Account ID
+        ECR_REPO       = "my-app"               // your ECR repo name
+        IMAGE_TAG      = "${env.BUILD_NUMBER}"  // unique tag
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/your-username/your-repo.git'
+            }
+        }
+
+        stage('Login to AWS ECR') {
+            steps {
+                sh """
+                    aws ecr get-login-password --region $AWS_REGION | \
+                    docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+                """
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                    docker build -t $ECR_REPO:$IMAGE_TAG .
+                    docker tag $ECR_REPO:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                """
+            }
+        }
+
+        stage('Push Docker Image to ECR') {
+            steps {
+                sh "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Docker image pushed successfully to ECR"
+        }
+        failure {
+            echo "❌ Build failed!"
+        }
+    }
+}

@@ -1,0 +1,56 @@
+step1: download nexus package on host server 
+       wget https://download.sonatype.com/nexus/3/nexus-3.76.0-03-unix.tar.gz
+
+step2: download java 
+       wget https://download.oracle.com/java/17/archive/jdk-17.0.12_linux-x64_bin.tar.gz
+
+step3: untar nexus package 
+       cd nexus/bin/etc 
+       cat nexus-default.properties 
+        in new tab go to nexus repo with postgreql and copy this 
+          username=<postgres_user>
+          password=<postgres_password>
+          jdbcUrl=<jdbcUrl_property>
+ 
+ paste the above in nexus-default.properties after nexus-default-path 
+
+ note:- step 3 is for rds integration with nexus
+
+ step4: inside bin go to nexus.vmoptions
+        first take a copy of nexus.vmoptions for backup
+        vi nexus.vmoptions
+        give path of -xx:Logfile= /opt/nexus/logs
+        give path of -DKaraf.data= /opt/nexus/data/nexus3
+        give path of -DKaraf.log= /opt/nexus/logs/log
+        
+        then check what changes you made 
+        diff -y nexus...  nexus.backup
+
+        now delete the downloaded tarfile and then again zip the two file 
+        tar -cvzf nexus-3.76.0-03-unix.tar.gz nexus-3.76.0-03 sonatype
+
+step5: inside dockerfile in ENV increase the size to 1256
+step6: Run the container using the command 
+        docker run -d -p 8081:8081 --user root nexus
+
+step6: make image and push to ECR
+       make a repo on ECR NAME as "nexus"
+       attach IAM ROLE WITH EC2 HAVING ECR ACCESS 
+       docker tag nexus:latest <name of image you want / copy that from ECR REPO / nexus:3.76> 
+       docker push <image name>
+       docker pull 194722397195.dkr.ecr.ap-south-1.amazonaws.com/nexus:3.76.0      # TO PULL THE IMAGE 
+step7: Create two Access point in EFS if not did by terraform 
+       /opt/nexus/logs
+       /opt/nexus/data
+
+       userid=200 gid=200
+step8: POLICIES ATTACHED TO ECSTASKEXECUTION ROLE 
+      EC2_CONTAINER FULL ACCESS
+      ECS FULL 
+      ECR FULL 
+      ECS TASK EXECUTION ROLE POLICY 
+      EFS FULL 
+      EFS-ALL
+
+step9: UPDATE THE cluster name in  EC2 OF CLUSTER by connecting to it 
+      echo ECS_CLUSTER= "demo-cluster" > /etc/ecs/ecs.config

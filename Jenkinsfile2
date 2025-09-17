@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION   = "us-east-1"            // change as per your region
+        AWS_ACCOUNT  = "123333"               // your account ID
+        ECR_REPO     = "my-app"               // your ECR repo name
+        IMAGE_TAG    = "${env.BUILD_NUMBER}"  // unique tag
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'guh'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                sh 'terraform plan -out=plan.out'
+            }
+        }
+
+        stage('Approval Before Apply') {
+            steps {
+                script {
+                    timeout(time: 10, unit: 'MINUTES') {   // optional timeout
+                        input message: "Do you approve to apply Terraform changes?", ok: "Yes, Apply"
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                sh 'terraform apply -auto-approve plan.out'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Infrastructure created and application deployed successfully"
+        }
+        failure {
+            echo "❌ Deployment failed!"
+        }
+    }
+}
