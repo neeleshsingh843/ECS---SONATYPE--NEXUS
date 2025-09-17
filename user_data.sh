@@ -1,2 +1,2 @@
 #!/bin/bash
-echo "ECS_CLUSTER=demo-cluster" >> /etc/ecs/ecs.config55555
+echo "ECS_CLUSTER=demo-cluster" >> /etc/ecs/ecs.config555555
