@@ -54,4 +54,4 @@ step8: POLICIES ATTACHED TO ECSTASKEXECUTION ROLE
 
 step9: UPDATE THE cluster name in  EC2 OF CLUSTER by connecting to it 
       echo ECS_CLUSTER= "demo-cluster" > /etc/ecs/ecs.config
-step10:
+step10::
